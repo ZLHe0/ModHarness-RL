@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ModHarness-RL: Recasting Harnesses as Learnable and Evolving Programs for Agentic RL</title>
+<meta name="description" content="ModHarness-RL recasts the harness of an RL agent as programs that are learned from data and evolve as the model trains.">
+<meta name="citation_title" content="ModHarness-RL: Recasting Harnesses as Learnable and Evolving Programs for Agentic RL">
+<meta property="og:title" content="ModHarness-RL">
+<meta property="og:image" content="assets/harness_as_code.webp">
+<style>
+  @font-face { font-family: "Pagella"; src: url("fonts/pagella-regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Pagella"; src: url("fonts/pagella-bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Pagella"; src: url("fonts/pagella-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+  @font-face { font-family: "Inconsolata"; src: url("fonts/inconsolata-regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  :root {
+    --ink: #1a1a1a; --muted: #5f5f5f; --rule: #e2e2e2; --link: #1f4e9c; --tint: #f7f7f5;
+    --serif: "Pagella", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: "Inconsolata", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; color: var(--ink); background: #fff; font: 18px/1.62 var(--serif); }
+  main { max-width: 720px; margin: 0 auto; padding: 0 1.25rem 5rem; }
+  a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+  .sc { font-variant: small-caps; letter-spacing: 0.02em; }
+
+  header { padding: 4.5rem 0 1rem; text-align: center; }
+  h1 { font-weight: 700; font-size: 2rem; line-height: 1.22; margin: 0 0 1.4rem; }
+  h1 .name { font-variant: small-caps; letter-spacing: 0.02em; }
+  .authors { margin: 0; font-size: 1.05rem; }
+  .authors span { white-space: nowrap; }
+  .affil { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.92rem; }
+  .links { margin: 1.4rem 0 0; font-size: 1rem; }
+  .links a, .links span { margin: 0 0.7rem; }
+  .links .off { color: var(--muted); }
+
+  h1 .name { display: block; }
+  h1 .subtitle { display: block; font-size: 0.62em; font-weight: normal; margin-top: 0.4rem; line-height: 1.35; }
+  .tldr { margin: 2.4rem 0 0; padding: 1.1rem 1.3rem 0.3rem; background: var(--tint); border-radius: 3px; }
+  .tldr h2 { margin: 0 0 0.6rem; font-size: 1.1rem; }
+  .tldr ul { margin-bottom: 0.8rem; }
+  .tldr li.result { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(0,0,0,0.12); }
+  details { margin: 1.4rem 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 0.7rem 0; }
+  summary { cursor: pointer; color: var(--muted); font-size: 0.95rem; }
+  details p { margin: 0.8rem 0 0.2rem; }
+
+  h2 { font-weight: 700; font-size: 1.4rem; line-height: 1.3; margin: 3.6rem 0 0.9rem; }
+  h3 { font-weight: 700; font-size: 1.1rem; margin: 2.2rem 0 0.6rem; }
+  p { margin: 0 0 1rem; }
+  ol, ul { padding-left: 1.3rem; margin: 0 0 1rem; }
+  li { margin: 0 0 0.45rem; }
+  .insight { border-left: 2px solid var(--ink); padding-left: 1rem; font-style: italic; margin: 1.4rem 0; }
+
+  figure { margin: 1.6rem 0 2rem; }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { margin: 0.7rem 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+  figcaption b { color: var(--ink); }
+  figure.narrow img { max-width: 440px; margin: 0 auto; }
+
+  .tablewrap { overflow-x: auto; margin: 1.6rem 0 0.7rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; line-height: 1.35; font-variant-numeric: lining-nums tabular-nums; }
+  th, td { padding: 3px 5px; text-align: center; white-space: nowrap; }
+  tbody th { text-align: left; font-weight: 400; padding-left: 0.9em; }
+  thead tr:first-child th { font-style: italic; font-weight: 400; border-bottom: 1px solid var(--rule); }
+  thead tr:last-child th { border-bottom: 1px solid var(--ink); font-weight: 700; }
+  table { border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
+  tr.group th { text-align: left; font-weight: 700; padding: 8px 0 2px; }
+  tr.ours { background: #edf2f7; }
+  td:nth-child(6), td:nth-child(11) { padding-right: 10px; }
+  td:nth-child(7) { padding-left: 10px; }
+  .mark { height: 0.85em; width: auto; vertical-align: -0.05em; margin-left: 0.25em; fill: currentColor; color: var(--muted); }
+  .tablecap { color: var(--muted); font-size: 0.88rem; line-height: 1.5; margin: 0 0 2rem; }
+  .tablecap b { color: var(--ink); }
+  code { font-family: var(--mono); font-size: 0.95em; }
+  pre { background: var(--tint); border: 1px solid var(--rule); padding: 0.9rem 1rem; overflow: auto; font: 13.5px/1.5 var(--mono); border-radius: 3px; margin: 0 0 1rem; }
+  @media (max-width: 640px) { h1 { font-size: 1.55rem; } body { font-size: 17px; } pre { font-size: 12px; } }
+  footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <h1><span class="name">ModHarness-RL</span><span class="subtitle">Recasting Harnesses as Learnable and Evolving Programs for Agentic RL</span></h1>
+  <p class="authors">
+    <span>Zelin He<sup>1,*,&dagger;</sup></span>,
+    <span>Jason Zhu<sup>2,*</sup></span>,
+    <span>Jacob Helwig<sup>2,*</sup></span>,
+    <span>Yujian Liu<sup>3,&dagger;</sup></span>,
+    <span>Li An<sup>3,&dagger;</sup></span>,
+    <span>Rohit Jain<sup>2</sup></span>,
+    <span>Shiyu Chang<sup>2,3</sup></span>,
+    <span>Alborz Geramifard<sup>2</sup></span>
+  </p>
+  <p class="affil"><sup>1</sup>The Pennsylvania State University &nbsp; <sup>2</sup>LinkedIn &nbsp; <sup>3</sup>University of California, Santa Barbara <br><sup>*</sup>Equal contribution &nbsp; <sup>&dagger;</sup>Work done during an internship at LinkedIn.</p>
+  <p class="links">
+    <a href="#">Paper</a>
+    <span class="off" title="Pending release">Code (pending release)</span>
+    <a href="#citation">BibTeX</a>
+  </p>
+</header>
+
+<section class="tldr">
+  <h2>TL;DR</h2>
+  <ul>
+    <li>Agentic RL trains under a hand-written harness that stays fixed, but an effective harness depends on the task, the data and the model, and keeps changing as the model trains.</li>
+    <li><span class="sc">ModHarness-RL</span> recasts the harness as programs over a structured <span class="sc">State</span>, a <span class="sc">Compression</span> program that assembles the model's context and a <span class="sc">Steering</span> program that supplies guidance when behavior deviates.</li>
+    <li>During RL training, candidate programs are proposed from recent trajectories, verified by execution, and replayed over past trajectories, so the harness evolves with the model.</li>
+    <li class="result">On CodeSearch, <span class="sc">ModHarness-RL</span> improves over the fixed-harness baseline by <b>14&ndash;24%</b> in every setting and by <b>5&ndash;12%</b> over the strongest memory, skill, prompt and harness evolution baseline. On ALFWorld and BIRD SQL, each program alone improves in seven of eight settings.</li>
+  </ul>
+</section>
+
+<section>
+  <details>
+    <summary>Abstract</summary>
+    <p>Agentic reinforcement learning (RL) increasingly relies on a harness, the scaffold around the model that decides what it sees of its own interaction and what guidance it receives. Most existing approaches train under a hand-written harness that stays fixed throughout. However, an effective harness depends on the domain, the data and the model, and keeps changing as the model trains. We introduce <span class="sc">ModHarness-RL</span>, which recasts the harness as programs that are learned from data and evolve as the model trains with RL. <span class="sc">ModHarness-RL</span> records the interaction as structured <span class="sc">State</span>, a set of typed blocks, and two core components of the harness are programs over these blocks, a <span class="sc">Compression</span> program that assembles the accumulated history into the model's context and a <span class="sc">Steering</span> program that supplies guidance when behavior deviates. During RL training, candidate programs are proposed from recent trajectories, verified by execution, and replayed over past trajectories, so the harness tracks how the model's behavior shifts. We study CodeSearch in depth and further analyze ALFWorld and BIRD SQL, with models from 1.5B to 8B. The proposed <span class="sc">Compression</span> and <span class="sc">Steering</span> mechanisms improve held-out performance over the fixed-harness baseline in most settings. These results suggest that a harness for agentic RL can be learned from the task's data and evolved with the model.</p>
+  </details>
+</section>
+
+<section>
+  <h2>How should a harness be represented to be learned and evolved?</h2>
+  <p><span class="sc">ModHarness-RL</span> represents the harness as programs over a structured <span class="sc">State</span>, which records the interaction as typed blocks such as each turn's reasoning, tool call and tool result. These blocks are the building blocks from which <span class="sc">ModHarness-RL</span> assembles the harness. A <span class="sc">Compression</span> program reassembles the blocks into organized model context under a fixed budget, and a <span class="sc">Steering</span> program reads them to detect when behavior deviates and appends guidance.</p>
+  <figure>
+    <img src="assets/harness_as_code.webp" width="1440" height="387" alt="Compression and Steering as programs that read the typed blocks of State.">
+    <figcaption><b>The harness as programs over <span class="sc">State</span>.</b> Compression returns a new view of <span class="sc">State</span> that re-renders earlier turns, keeping their key information and offloading what is no longer needed. Steering checks the trace for specific conditions and, when one holds, returns a message that is appended to steer the model's behavior.</figcaption>
+  </figure>
+  <p>Programs over these blocks have three properties that suit learning and evolving.</p>
+  <ol>
+    <li><b>Learnable</b>, since an LLM can write them directly from training trajectories and their corresponding rewards.</li>
+    <li><b>Computationally inexpensive</b>, allowing them to be run on every turn of every trajectory without calling another model.</li>
+    <li><b>Testable</b>, allowing each candidate harness to be replayed over stored trajectories to evaluate its fitness before it is accepted or rejected.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>How can the harness be learned and evolved with the model?</h2>
+  <p>As training progresses, model behaviors change. Failure modes from previous model versions may become less frequent, while new ones may emerge. <span class="sc">ModHarness-RL</span> therefore uses an end-to-end pipeline that updates the harness from online data. It summarizes experiences from training trajectories, proposes and verifies candidate programs, and validates them on held-out training tasks. To evolve the harness with the model, we alternate this pipeline with RL updates of the model weights.</p>
+  <figure>
+    <img src="assets/staged_optimization.webp" width="1440" height="580" loading="lazy" alt="Compress is optimized against the base policy, then policy updates alternate with steer updates.">
+    <figcaption><b>Learning and evolving the harness with the policy.</b> <code>compress</code> is optimized against the base policy, and policy updates under the latest harness are then alternated with <code>steer</code> updates. Both optimizations propose programs from the reservoir, verify them by execution, and install a winner only through a held-out gate.</figcaption>
+  </figure>
+  <p class="insight">The key insight is that the harness should guide only what the model cannot learn on its own.</p>
+  <p>A <span class="sc">Replay</span> mechanism reruns each candidate <span class="sc">Steering</span> program over trajectories from past training steps and installs it only for the failures that persist as the model trains.</p>
+</section>
+
+<section>
+  <h2>A learned <span class="sc">Compression</span> program and <span class="sc">Steering</span> trigger</h2>
+  <p>The program shortens only file reads of at least 1,000 characters in earlier turns, replacing each with a digest that keeps the imports, the definitions, and the first and last lines. Search output, short reads and the newest turn are kept as they are. In this episode, the tool output the model reads before turn 5 falls from 5,626 to 2,809 characters, while the structure of the file stays visible.</p>
+  <figure>
+    <img src="assets/compress_example.webp" width="1440" height="1911" loading="lazy" alt="A compress program applied to a stored CodeSearch training episode.">
+    <figcaption><b>A <code>compress</code> program applied to a stored training episode.</b> Top: pseudocode of the generated program. Bottom: turns 1&ndash;4 of the episode as recorded (left) and as shown to the model (right); numbered rules match the program. Grey lines are dropped, and teal lines are written by the program.</figcaption>
+  </figure>
+  <p>The check stays silent while the agent searches and opens whole files. After turn 4, the agent's view shows a single function, so the check fires and the guidance asks the agent to scan nearby definitions before submitting. The agent then widens the view to the function body and submits <code>Term.rlike</code>, which earns the full reward of 3/3 for the correct file, class and function.</p>
+  <figure>
+    <img src="assets/steer_example.webp" width="1440" height="1799" loading="lazy" alt="A steer trigger serving guidance in a live CodeSearch training episode.">
+    <figcaption><b>A <code>steer</code> trigger serving guidance in a live training episode.</b> Top: pseudocode of the generated check and its guidance. Bottom: the episode as recorded, with the check evaluated after every turn (right); the numbered rule matches the program. The check fires once, after turn 4, and the guidance is appended as a message before the model's next turn.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Results</h2>
+  <p>On CodeSearch, <span class="sc">ModHarness-RL</span> improves over the fixed-harness baseline by 14 to 24% in every setting and scores highest against memory, skill, prompt and harness evolution baselines, by 5 to 12% over the strongest of them. On ALFWorld and BIRD SQL, each program alone improves over the base harness in seven of eight settings.</p>
+  <div class="tablewrap">
+  <table>
+    <thead>
+      <tr><th></th><th colspan="5">Context-limited</th><th colspan="5">Context-sufficient</th></tr>
+      <tr><th style="text-align:left">Method</th><th>Lite</th><th>Verified</th><th>Pro</th><th>Overall</th><th>&Delta;</th><th>Lite</th><th>Verified</th><th>Pro</th><th>Overall</th><th>&Delta;</th></tr>
+    </thead>
+    <tbody>
+<tr class="group"><th colspan="11">Qwen3-4B</th></tr>
+<tr><th>Zero-shot<svg class="mark" viewBox="-1 -1 2 2" aria-label="not fine-tuned"><g stroke="currentColor" stroke-width="0.16" stroke-linecap="round"><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(0)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(0)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(60)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(60)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(120)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(120)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(180)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(180)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(240)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(240)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(300)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(300)"/></g></svg></th><td>0.172</td><td>0.139</td><td>0.113</td><td>0.142</td><td><b>&minus;53%</b></td><td>0.138</td><td>0.111</td><td>0.105</td><td>0.119</td><td><b>&minus;67%</b></td></tr>
+<tr><th>Base harness<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.349</td><td>0.328</td><td>0.224</td><td>0.303</td><td>&mdash;</td><td>0.385</td><td>0.351</td><td>0.346</td><td>0.361</td><td>&mdash;</td></tr>
+<tr><th>DeepAgents<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.358</td><td>0.334</td><td>0.292</td><td>0.329</td><td><b>+9%</b></td><td>0.407</td><td>0.380</td><td>0.310</td><td>0.368</td><td><b>+2%</b></td></tr>
+<tr><th>INSPO<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.323</td><td>0.317</td><td>0.253</td><td>0.299</td><td><b>&minus;1%</b></td><td>0.400</td><td>0.408</td><td>0.322</td><td>0.379</td><td><b>+5%</b></td></tr>
+<tr><th>EvolveR<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.327</td><td>0.327</td><td>0.219</td><td>0.294</td><td><b>&minus;3%</b></td><td>0.406</td><td>0.416</td><td>0.322</td><td>0.384</td><td><b>+6%</b></td></tr>
+<tr><th>HarnessForge<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.372</td><td>0.351</td><td>0.289</td><td>0.339</td><td><b>+12%</b></td><td>0.407</td><td>0.394</td><td>0.358</td><td>0.388</td><td><b>+7%</b></td></tr>
+<tr><th>SkillRL<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.359</td><td>0.374</td><td><b>0.308</b></td><td>0.349</td><td><b>+15%</b></td><td>0.438</td><td>0.400</td><td>0.341</td><td>0.395</td><td><b>+9%</b></td></tr>
+<tr class="ours"><th>+ <span class="sc">Compression</span><svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.393</td><td>0.356</td><td>0.277</td><td>0.345</td><td><b>+14%</b></td><td>0.374</td><td>0.374</td><td>0.338</td><td>0.363</td><td><b>+1%</b></td></tr>
+<tr class="ours"><th>+ <span class="sc">Steering</span><svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td><b>0.426</b></td><td>0.361</td><td>0.302</td><td>0.365</td><td><b>+20%</b></td><td>0.439</td><td>0.410</td><td>0.356</td><td>0.403</td><td><b>+12%</b></td></tr>
+<tr class="ours"><th><span class="sc">ModHarness-RL</span><svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.422</td><td><b>0.388</b></td><td>0.282</td><td><b>0.368</b></td><td><b>+21%</b></td><td><b>0.454</b></td><td><b>0.432</b></td><td><b>0.381</b></td><td><b>0.424</b></td><td><b>+17%</b></td></tr>
+<tr class="group"><th colspan="11">Qwen3-8B</th></tr>
+<tr><th>Zero-shot<svg class="mark" viewBox="-1 -1 2 2" aria-label="not fine-tuned"><g stroke="currentColor" stroke-width="0.16" stroke-linecap="round"><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(0)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(0)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(60)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(60)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(120)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(120)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(180)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(180)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(240)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(240)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(300)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(300)"/></g></svg></th><td>0.090</td><td>0.084</td><td>0.095</td><td>0.089</td><td><b>&minus;73%</b></td><td>0.098</td><td>0.097</td><td>0.059</td><td>0.086</td><td><b>&minus;79%</b></td></tr>
+<tr><th>Base harness<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.363</td><td>0.357</td><td>0.272</td><td>0.333</td><td>&mdash;</td><td>0.431</td><td>0.419</td><td>0.352</td><td>0.403</td><td>&mdash;</td></tr>
+<tr><th>DeepAgents<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.433</td><td>0.371</td><td>0.289</td><td>0.368</td><td><b>+10%</b></td><td>0.465</td><td>0.456</td><td>0.361</td><td>0.430</td><td><b>+7%</b></td></tr>
+<tr><th>INSPO<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.331</td><td>0.358</td><td>0.241</td><td>0.313</td><td><b>&minus;6%</b></td><td>0.477</td><td>0.441</td><td>0.347</td><td>0.425</td><td><b>+5%</b></td></tr>
+<tr><th>EvolveR<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.381</td><td>0.374</td><td>0.277</td><td>0.347</td><td><b>+4%</b></td><td>0.443</td><td>0.450</td><td>0.353</td><td>0.418</td><td><b>+4%</b></td></tr>
+<tr><th>HarnessForge<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.350</td><td>0.348</td><td>0.192</td><td>0.301</td><td><b>&minus;10%</b></td><td>0.430</td><td>0.395</td><td>0.274</td><td>0.370</td><td><b>&minus;8%</b></td></tr>
+<tr><th>SkillRL<svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.338</td><td>0.308</td><td>0.275</td><td>0.309</td><td><b>&minus;7%</b></td><td>0.478</td><td>0.428</td><td>0.362</td><td>0.426</td><td><b>+6%</b></td></tr>
+<tr class="ours"><th>+ <span class="sc">Compression</span><svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.392</td><td>0.356</td><td>0.323</td><td>0.359</td><td><b>+8%</b></td><td>0.453</td><td>0.461</td><td>0.329</td><td>0.418</td><td><b>+4%</b></td></tr>
+<tr class="ours"><th>+ <span class="sc">Steering</span><svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td><b>0.453</b></td><td>0.397</td><td>0.298</td><td>0.386</td><td><b>+16%</b></td><td>0.483</td><td><b>0.487</b></td><td>0.385</td><td>0.455</td><td><b>+13%</b></td></tr>
+<tr class="ours"><th><span class="sc">ModHarness-RL</span><svg class="mark" viewBox="-0.2 -0.72 0.44 0.74" aria-label="RL-trained"><path d="M0 0 C0.21 -0.035 0.25 -0.194 0.13 -0.37 C0.08 -0.493 0.1 -0.581 0.03 -0.704 C0.03 -0.546 -0.06 -0.493 -0.08 -0.537 C-0.11 -0.387 -0.02 -0.334 -0.06 -0.229 C-0.11 -0.299 -0.13 -0.387 -0.16 -0.334 C-0.22 -0.229 -0.19 -0.079 0 0Z"/></svg></th><td>0.441</td><td><b>0.437</b></td><td><b>0.351</b></td><td><b>0.412</b></td><td><b>+24%</b></td><td><b>0.492</b></td><td>0.473</td><td><b>0.409</b></td><td><b>0.460</b></td><td><b>+14%</b></td></tr>
+<tr class="group"><th colspan="11">GPT-5-mini</th></tr>
+<tr><th>Zero-shot<svg class="mark" viewBox="-1 -1 2 2" aria-label="not fine-tuned"><g stroke="currentColor" stroke-width="0.16" stroke-linecap="round"><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(0)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(0)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(60)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(60)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(120)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(120)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(180)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(180)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(240)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(240)"/><line x1="0" y1="0" x2="0" y2="-0.9" transform="rotate(300)"/><polyline fill="none" points="-0.28,-0.75 0,-0.5 0.28,-0.75" transform="rotate(300)"/></g></svg></th><td>0.113</td><td>0.108</td><td>0.055</td><td>0.094</td><td>&mdash;</td><td>0.404</td><td>0.389</td><td>0.298</td><td>0.366</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="tablecap"><b>CodeSearch validation, F1 averaged over the three granularities.</b> &Delta; is the relative change in <i>Overall</i> over the base harness of the same model, and bold is best in a column within a model. Shaded rows are ours. The flame marks an RL-trained model and the snowflake one that was not fine-tuned.</p>
+  <figure>
+    <img src="assets/benchmarks.webp" width="1440" height="400" loading="lazy" alt="Score of the base harness, Compression and Steering on CodeSearch, ALFWorld and BIRD SQL.">
+    <figcaption><b><span class="sc">Compression</span> and <span class="sc">Steering</span> each applied to the base harness on three benchmarks.</b> Models are Qwen3 on CodeSearch, Qwen2.5 on ALFWorld and Qwen3.5 on BIRD SQL, and the tick gives the scale. Whiskers are &plusmn;1 SD over repeated evaluations of each trained checkpoint. <sup>&dagger;</sup>SFT warm start.</figcaption>
+  </figure>
+  <p>On CodeSearch, <span class="sc">Steering</span> improves over the base harness by 15% on average over the four settings, which is better than <span class="sc">Compression</span> at 6%. On ALFWorld under a limited budget, averaged over the two models, <span class="sc">Compression</span> improves by 22%, which is better than <span class="sc">Steering</span> at 16%.</p>
+
+  <h3>Score and cost under a limited and a sufficient context budget</h3>
+  <p>Under a limited budget, performance tends to improve, with 8% improvement for Qwen3-8B on CodeSearch and 21% improvement for Qwen2.5-7B on ALFWorld. Under a sufficient budget, <span class="sc">Compression</span> uses 74% fewer tokens on ALFWorld and 10% fewer on CodeSearch.</p>
+  <figure class="narrow">
+    <img src="assets/agent_loop.webp" width="1440" height="927" loading="lazy" alt="F1 against inference time on CodeSearch, under a limited and a sufficient context budget.">
+    <figcaption><b>F1 against inference time, Qwen3-8B on CodeSearch.</b> Each panel is one context budget. F1 is averaged over the three granularities and over all validation tasks, and inference time is the average seconds an episode takes end to end.</figcaption>
+  </figure>
+  <figure class="narrow">
+    <img src="assets/rq1_main.webp" width="1440" height="832" loading="lazy" alt="Score and prefill tokens of Compression against the base harness.">
+    <figcaption><b><span class="sc">Compression</span> against the base harness.</b> Qwen2.5-7B on ALFWorld and Qwen3-8B on CodeSearch. Prefill tokens are the prompt tokens not served from the prefix cache, summed over an episode and measured by replaying the recorded episodes.</figcaption>
+  </figure>
+</section>
+
+<section id="citation">
+  <h2>Citation</h2>
+<pre>@article{he2026modharness,
+  title  = {ModHarness-RL: Recasting Harnesses as Learnable and Evolving Programs for Agentic RL},
+  author = {He, Zelin and Zhu, Jason and Helwig, Jacob and Liu, Yujian and An, Li and
+            Jain, Rohit and Chang, Shiyu and Geramifard, Alborz},
+  journal = {arXiv preprint},
+  year   = {2026}
+}</pre>
+  <footer>Code will be released on this page.</footer>
+</section>
+
+</main>
+</body>
+</html>
